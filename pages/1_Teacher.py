@@ -6,20 +6,22 @@ from canvasapi.exceptions import ResourceDoesNotExist
 import pandas as pd
 
 # Set up Canvas API
-
-
-# Set up Canvas API
 API_URL = os.getenv("CANVAS_URL")
 API_KEY = os.getenv("CANVAS_TOKEN")
 if not (API_URL and API_KEY):
     raise Exception("'CANVAS_' environment variables not set - see installation instructions to resolve this")
 
-# Initialize Canvas object
-canvas = Canvas(API_URL, API_KEY)  # No "canvasapi.Canvas", just "Canvas"
-
-#canvas = canvasapi.Canvas(API_URL, API_KEY)
+canvas = Canvas(API_URL, API_KEY)  
 
 # ----------- Teacher Portal Functions -----------------
+
+def get_course_quizzes(course):
+    try:
+        return course.get_quizzes()
+    except ResourceDoesNotExist:
+        st.write("Error: The selected course does not have quizzes or could not be found.")
+        return []
+
 def select_course(canvas):
     past_courses = []
     current_courses = []
@@ -72,8 +74,8 @@ def select_course(canvas):
 
         # Quiz selection
         if selected_course:
-            quizzes = selected_course.get_quizzes()
-            quiz_options = [quiz.title for quiz in quizzes]
+            quizzes = get_course_quizzes(selected_course)
+            quiz_options = [quiz.title for quiz in quizzes] if quizzes else []
 
             selected_quiz_title = st.selectbox("Select a Quiz:", quiz_options, key="quiz_selectbox")
             selected_quiz = next((quiz for quiz in quizzes if quiz.title == selected_quiz_title), None)
@@ -82,25 +84,76 @@ def select_course(canvas):
             st.write(f"Selected Quiz: {selected_quiz.title}")
 
             students = selected_course.get_users(enrollment_type=['student'])
-
             attendance = {}
 
-            # Display each student 
+            # Display each student in two columns
             st.write("### Mark Attendance")
-            for student in students:
-                attendance_status = st.radio(
-                    f"{student.name}",
-                    options=["Here", "Absent"],
-                    index=0,  # Default to "Here"
-                    key=f"attendance_{student.id}"
-                )
+            col1, col2 = st.columns(2)
+
+            for idx, student in enumerate(students):
+                # Alternate between columns
+                if idx % 2 == 0:
+                    with col1:
+                        attendance_status = st.radio(
+                            f"{student.name}",
+                            options=["Here", "Absent"],
+                            index=1,  # Default to "Absent"
+                            key=f"attendance_{student.id}"
+                        )
+                else:
+                    with col2:
+                        attendance_status = st.radio(
+                            f"{student.name}",
+                            options=["Here", "Absent"],
+                            index=1,  # Default to "Absent"
+                            key=f"attendance_{student.id}"
+                        )
                 attendance[student.name] = attendance_status
 
+                
+                
+                
+                
+            
+            
+            
+
+            # Example values for quiz and class
+            quiz_title = selected_quiz.title if selected_quiz else "Quiz"
+            class_name = selected_course.name if selected_course else "Class"
+
+            # Get current date in YYYY-MM-DD format
+            current_date = datetime.now().strftime("%Y-%m-%d")
+
+            # Create a dynamic file name including date, quiz, and class
+            file_name = f"{class_name}_{quiz_title}_attendance_{current_date}.csv".replace(" ", "_")
+
             if st.button("Submit Attendance"):
+                # Prepare attendance data
                 attendance_data = [{"Student Name": student_name, "Status": status} for student_name, status in attendance.items()]
                 attendance_df = pd.DataFrame(attendance_data)
+                
+                # Count students marked as "Here"
+                total_present = attendance_df[attendance_df["Status"] == "Here"].shape[0]
+                
+                # Display attendance record and total count
                 st.write("### Attendance Record")
                 st.table(attendance_df)
+                st.write(f"**Total Students Present:** {total_present}")
+                
+                # Convert attendance DataFrame to CSV
+                csv = attendance_df.to_csv(index=False)
+                
+                # Provide download button for CSV file with a dynamic name
+                st.download_button(
+                    label="Download Attendance as CSV",
+                    data=csv,
+                    file_name=file_name,
+                    mime="text/csv"
+                )
+
+
+
 
 
 
