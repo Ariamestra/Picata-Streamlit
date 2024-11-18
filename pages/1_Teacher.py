@@ -111,57 +111,30 @@ def select_course(canvas):
                 attendance[student.name] = attendance_status
 
                 
-                
-                
-                
-            
-            
-            
-
-            # Example values for quiz and class
             quiz_title = selected_quiz.title if selected_quiz else "Quiz"
             class_name = selected_course.name if selected_course else "Class"
 
-            # Get current date in YYYY-MM-DD format
             current_date = datetime.now().strftime("%Y-%m-%d")
-
-            # Create a dynamic file name including date, quiz, and class
             file_name = f"{class_name}_{quiz_title}_attendance_{current_date}.csv".replace(" ", "_")
 
             if st.button("Submit Attendance"):
-                # Prepare attendance data
                 attendance_data = [{"Student Name": student_name, "Status": status} for student_name, status in attendance.items()]
                 attendance_df = pd.DataFrame(attendance_data)
                 
-                # Count students marked as "Here"
                 total_present = attendance_df[attendance_df["Status"] == "Here"].shape[0]
                 
-                # Display attendance record and total count
                 st.write("### Attendance Record")
                 st.table(attendance_df)
                 st.write(f"**Total Students Present:** {total_present}")
-                
-                # Convert attendance DataFrame to CSV
+            
                 csv = attendance_df.to_csv(index=False)
                 
-                # Provide download button for CSV file with a dynamic name
                 st.download_button(
                     label="Download Attendance as CSV",
                     data=csv,
                     file_name=file_name,
                     mime="text/csv"
                 )
-
-
-
-
-
-
-
-
-
-
-
 
 def create_partners(canvas):
     st.write("Create partners for quizzes.")
