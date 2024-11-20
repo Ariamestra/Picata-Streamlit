@@ -21,12 +21,17 @@ canvas = canvasapi.Canvas(API_URL, API_KEY)
 st.title("Welcome to picaTA")
 st.write("PICATA is a tool for instructors who wish to combine Peer Instruction (PI) and Continuous Assessments (CA) utilizing results from students' earlier CA data.")      
 
-# Overview of Services
-st.subheader("Our Services")
+st.subheader("The Teacher Portal")
+st.write("""
+The **Teacher Portal** connects with Canvas to help educators:
+- **Create Partners:** Generate partners for quizzes.
+- **View Grades:** Review and analyze student performance.
+- **Add Points:** Update scores based on assessments.
+""")
 
-st.write("### 1. Course Management")
-st.write("Easily select and manage your courses, with separation between past and current courses.")
-st.write("### 2. Peer Instruction Integration")
-st.write("Utilize a streamlined process for Peer Instruction, promoting collaborative learning.")
-st.write("### 3. Data Insights and Analytics")
-st.write("Gain insights on student progress and engagement with built-in analytics.")
+st.subheader("The Student Portal")
+st.write("""
+The **Student Portal** features a teaching assistant chat designed to:
+- **Provide Interactive Help:** Ask PicaTA questions about course material or your coursework.
+- **Step-by-Step Guidance:** Receive detailed explanations to enhance your understanding at your own pace.
+""")
