@@ -3,4 +3,4 @@ streamlit
 streamlit-option-menu
 langchain
 pandas
-langchain-community>=1.0.0
+

@@ -4,20 +4,25 @@
 
 ## Features
 
-### Instructor Portal
+### Teacher Portal
 - **Create Partners**: Generate partners for quizzes.
 - **View Grades**: Review and analyze student performance.
 - **Add Points**: Update scores based on assessments.
 
 ### Student Portal
-- **Interactive Learning**: Engage with an AI-driven teaching assistant (TA) tailored for discrete mathematics and algorithms. Students can ask questions, and the TA provides step-by-step guidance without giving direct answers to encourage deep learning.
+- **Provide Interactive Help**: Ask PicaTA questions about course material or your coursework.
+- **Step-by-Step Guidance**: Receive detailed explanations to enhance your understanding at your own pace.
+![Student Portal Image](pictures/studentPortal.png)
+
+
+
 
 ## Installation
 
 1. **Clone the Repository**:
     ```bash
     git clone <repository_url>
-    cd picaTA
+    cd <repository_name>
     ```
 
 2. **Set Up the Virtual Environment**:
@@ -32,33 +37,25 @@
     ```
 
 4. **Set Up Environment Variables**:
+    1. Create file `set_env.sh`
     - `CANVAS_URL`: Your Canvas API base URL.
     - `CANVAS_TOKEN`: Your Canvas API key.
-  
-    These variables are essential for API interaction. You can set them directly in the terminal:
-    ```bash
-    export CANVAS_URL="your_canvas_url"
-    export CANVAS_TOKEN="your_canvas_token"
-    ```
 
+    2. Run 
+    ```bash
+    source set_env.sh
+    ```
+     ```bash
+    env
+    ```
 
 ## Running the App
 
 Start the Streamlit app with the following command:
 
 ```bash
-streamlit run main.py
+streamlit run Home.py
 ```
-
-## Usage
-
-### Sidebar Menu
-- **Home**: An overview of picaTA and its functionalities.
-- **Teacher**: Instructor-specific tools for course and assessment management.
-- **Student**: A conversational assistant for student learning support.
-
-### Student Chatbot
-- picaTA’s chatbot engages students in learning through guided assistance on complex topics. Ask questions to enhance understanding of discrete mathematics and algorithms.
 
 ## Libraries and Dependencies
 
@@ -67,6 +64,8 @@ streamlit run main.py
 - **canvasapi**: Python wrapper for the Canvas LMS API.
 - **langchain_ollama**: Language model library for interactive question-answering with a conversational AI model.
 - **streamlit_option_menu**: Custom sidebar navigation for streamlined access to various features.
+- **Pandas**
+- **langchain-community**
 
 ## Notes
 - **Environment Configuration**: Ensure `CANVAS_URL` and `CANVAS_TOKEN` are set as environment variables to use Canvas API functionalities.
