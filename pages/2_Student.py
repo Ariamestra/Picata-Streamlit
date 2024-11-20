@@ -5,47 +5,72 @@ from langchain_ollama import OllamaLLM
 from langchain.prompts import ChatPromptTemplate
 from langchain.document_loaders import PyPDFLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain_community.document_loaders import PyPDFLoader
+from langchain.document_loaders import PyPDFLoader
 
 st.title(f"Welcome to the Student Portal")
 
-PDF_PATH ="Data/Discrete_Math_Book.pdf"
+# File Uploader -------------------------------------------------
+with st.sidebar:
+    uploaded_files = st.file_uploader("Upload PDFs", type=['pdf'], accept_multiple_files=True)
+    if uploaded_files:
+        combined_pdf_content = ""  
 
-# Process the bundled PDF file
-@st.cache_data
-def process_embedded_pdf(file_path):
-    loader = PyPDFLoader(file_path)
-    pages = loader.load()
-    
-    # Split the text into chunks
-    text_splitter = RecursiveCharacterTextSplitter(
-        chunk_size=1000,
-        chunk_overlap=200,
-        length_function=len
-    )
-    texts = text_splitter.split_documents(pages)
-    
-    # Combine the text chunks into a single string
-    pdf_content = "\n".join([doc.page_content for doc in texts])
-    return pdf_content
+        @st.cache_data
+        def process_pdf(file_path):
+            loader = PyPDFLoader(file_path)
+            pages = loader.load()
 
-# Process and store the PDF content
-if "pdf_content" not in st.session_state:
-    st.session_state["pdf_content"] = process_embedded_pdf(PDF_PATH)
+            # Split text into chunks 
+            text_splitter = RecursiveCharacterTextSplitter(
+                chunk_size=1000,
+                chunk_overlap=200,
+                length_function=len
+            )
+            texts = text_splitter.split_documents(pages)
 
-# Display the processed content ------------------------------------------------------
+            # Extract content
+            pdf_content = "\n".join([doc.page_content for doc in texts])
+            return pdf_content
+
+        for uploaded_file in uploaded_files:
+            temp_file_path = f"temp_{uploaded_file.name}"
+            
+            # Save each uploaded file temporarily
+            with open(temp_file_path, "wb") as f:
+                f.write(uploaded_file.getvalue())
+
+            # Process each PDF 
+            pdf_content = process_pdf(temp_file_path)
+            combined_pdf_content += f"\n--- Content from {uploaded_file.name} ---\n{pdf_content}"
+
+            # Clean up temporary file
+            os.remove(temp_file_path)
+
+        # Ensure PDF(s) are in session state
+        st.session_state["pdf_content"] = combined_pdf_content
+        st.success(f"{len(uploaded_files)} PDFs processed successfully!")
+    else:
+        if "pdf_content" not in st.session_state:
+            st.session_state["pdf_content"] = ""
+
+
+# Display extracted content (Delete Later) ---------------------------------------
 if st.session_state["pdf_content"]:
-    with st.expander("View Embedded PDF Content"):
+    with st.expander("View extracted PDF content"):
         st.text_area("PDF Content", st.session_state["pdf_content"], height=450)
+        
 
-# System message for the chatbot
+# Chat -----------------------------------------------------------------------------
 system_message = """
 You are PicaTA, a knowledgeable teaching assistant specialized in discrete mathematics.
-Your goal is to provide helpful, detailed, and step-by-step explanations to undergraduate 
-computer science students. Always maintain a friendly and professional tone. Use the context 
-provided from the conversation and the embedded PDF to support your responses.
+Your goal is to offer clear, detailed, and step-by-step explanations to undergraduate computer 
+science students, guiding them through challenges with thoughtful support and a deeper 
+understanding and confidence in their abilities. Always maintain a friendly and professional tone. 
+Use the context provided from the conversation and possibly the uploaded PDFs to support your responses.
 """
 
-# Define the prompt template
+
 template = """
 System: {system_message}
 
@@ -58,12 +83,16 @@ Here is the conversation history: {context}
 Answer: {question}
 """
 
+system_message = """
+You are PicaTA
+"""
+
 model = OllamaLLM(model="llama3.2")
 prompt = ChatPromptTemplate.from_template(template)
 
 # Handle conversation
 def handle_conversation(user_input, context):
-    pdf_context = st.session_state.get("pdf_content", "") 
+    pdf_context = st.session_state.get("pdf_content", "")
     result = prompt | model
     response = result.invoke({
         "system_message": system_message,
@@ -73,19 +102,19 @@ def handle_conversation(user_input, context):
     })
     return response
 
-# Chat history session state 
+# Chat history session state
 if "messages" not in st.session_state:
-    st.session_state.messages = []  # Store chat messages 
+    st.session_state.messages = []  # Store chat messages
 if "context" not in st.session_state:
     st.session_state.context = ""  # Store context
 
-# Display chat history
+# Chat history
 for message in st.session_state.messages:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
 
 # Process new user input
-if user_input := st.chat_input("Ask a question about the document or your coursework:"):
+if user_input := st.chat_input("You:"):
     st.session_state.messages.append({"role": "user", "content": user_input})
     st.session_state.context += f"\nUser: {user_input}"
 
@@ -93,7 +122,7 @@ if user_input := st.chat_input("Ask a question about the document or your course
     with st.chat_message("user"):
         st.markdown(user_input)
 
-    # Process user input and AI response
+    # Process user input and picata response
     start_time = time.time()
     ai_response = handle_conversation(user_input, st.session_state.context)
     end_time = time.time()
@@ -101,10 +130,10 @@ if user_input := st.chat_input("Ask a question about the document or your course
 
     st.session_state.messages.append({"role": "assistant", "content": ai_response})
 
-    # Update context 
+    
     st.session_state.context += f"\nPicaTA: {ai_response}"
 
-    # Display AI response
+    # picta response
     with st.chat_message("assistant"):
         st.markdown(ai_response)
 
