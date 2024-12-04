@@ -3,7 +3,7 @@ import streamlit as st
 import time
 from langchain_ollama import OllamaLLM
 from langchain.prompts import ChatPromptTemplate
-from langchain.document_loaders import PyPDFLoader
+#from langchain.document_loaders import PyPDFLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.document_loaders import PyPDFLoader
 
@@ -63,11 +63,9 @@ if st.session_state["pdf_content"]:
 
 # Chat -----------------------------------------------------------------------------
 system_message = """
-You are PicaTA, a knowledgeable teaching assistant specialized in discrete mathematics.
-Your goal is to offer clear, detailed, and step-by-step explanations to undergraduate computer 
-science students, guiding them through challenges with thoughtful support and a deeper 
-understanding and confidence in their abilities. Always maintain a friendly and professional tone. 
-Use the context provided from the conversation and possibly the uploaded PDFs to support your responses.
+You are PicaTA, a knowledgeable teaching assistant. Your goal is to provide helpful, detailed, and step-by-step explanations to undergraduate students. 
+Do not give answers outright, instead, guide students toward understanding. Always maintain a friendly and professional tone. 
+Use the context provided from the conversation and possibly the uploaded PDF to support your responses.
 """
 
 
