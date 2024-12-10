@@ -61,14 +61,31 @@ if st.session_state["pdf_content"]:
         st.text_area("PDF Content", st.session_state["pdf_content"], height=450)
         
 
-# Chat -----------------------------------------------------------------------------
-system_message = """
-You are PicaTA, a knowledgeable teaching assistant. Your goal is to provide helpful, detailed, and step-by-step explanations to undergraduate students. 
-Do not give answers outright, instead, guide students toward understanding. Always maintain a friendly and professional tone. 
-Use the context provided from the conversation and possibly the uploaded PDF to support your responses.
-"""
+# System Message Functionality -----------------------------------------------------------------------------
+system_messages = {
+    "General Teaching Assistant": 
+    """
+    You are PicaTA, a knowledgeable teaching assistant. Your goal is to provide helpful, detailed, and step-by-step explanations to undergraduate students.
+    Do not give answers outright, instead, guide students toward understanding. Always maintain a friendly and professional tone.
+    Use the context provided from the conversation and possibly the uploaded PDF to support your responses.
+    """,
+    "Discrete Math Teaching Assistant": 
+    """
+    You are PicaTA, a knowledgeable teaching assistant specialized in discrete mathematics.
+    Your goal is to provide helpful, detailed, and step-by-step explanations to undergraduate
+    computer science students. Always maintain a friendly and professional tone. Use the context
+    provided from the conversation and possibly the uploaded PDF to support your responses.
+    """
+}
 
+# System message Selector 
+selected_message_key = st.selectbox("Select the system message you would like:", options=list(system_messages.keys()))
+selected_system_message = system_messages[selected_message_key]
 
+# Print Selected System Messgae (Delete Later)
+st.text_area("System Message Preview", selected_system_message, height=200, disabled=True)
+
+# Chat Functionality -----------------------------------------------------------------------------
 template = """
 System: {system_message}
 
@@ -81,10 +98,6 @@ Here is the conversation history: {context}
 Answer: {question}
 """
 
-system_message = """
-You are PicaTA
-"""
-
 model = OllamaLLM(model="llama3.2")
 prompt = ChatPromptTemplate.from_template(template)
 
@@ -93,7 +106,7 @@ def handle_conversation(user_input, context):
     pdf_context = st.session_state.get("pdf_content", "")
     result = prompt | model
     response = result.invoke({
-        "system_message": system_message,
+        "system_message": selected_system_message,
         "pdf_context": pdf_context,
         "context": context,
         "question": user_input
@@ -120,18 +133,16 @@ if user_input := st.chat_input("You:"):
     with st.chat_message("user"):
         st.markdown(user_input)
 
-    # Process user input and picata response
+    # Process user input and PicaTA response
     start_time = time.time()
     ai_response = handle_conversation(user_input, st.session_state.context)
     end_time = time.time()
     response_time = end_time - start_time
 
     st.session_state.messages.append({"role": "assistant", "content": ai_response})
-
-    
     st.session_state.context += f"\nPicaTA: {ai_response}"
 
-    # picta response
+    # PicaTA response
     with st.chat_message("assistant"):
         st.markdown(ai_response)
 
